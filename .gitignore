@@ -1,0 +1,20 @@
+# Local environment variables
+.env
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Visual Studio Code
+.vscode/
+
+# Java / Maven
+backend/target/
+
+# Angular / Node
+frontend/node_modules/
+frontend/dist/
+
+# Operating system
+.DS_Store
+Thumbs.db
