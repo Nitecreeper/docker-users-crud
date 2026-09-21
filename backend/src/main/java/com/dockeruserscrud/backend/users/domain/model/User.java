@@ -1,13 +1,14 @@
 package com.dockeruserscrud.backend.users.domain.model;
 
 import java.time.Instant;
+import java.util.Locale;
 
 public record User(
-    Long id,
-    String name,
-    String email,
-    Instant createdAt,
-    Instant updatedAt
+        Long id,
+        String name,
+        String email,
+        Instant createdAt,
+        Instant updatedAt
 ) {
 
     public User {
@@ -18,13 +19,16 @@ public record User(
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("User email must not be blank");
         }
+
+        name = name.trim();
+        email = email.trim().toLowerCase(Locale.ROOT);
     }
 
     public static User create(String name, String email) {
         return new User(
                 null,
-                name.trim(),
-                email.trim().toLowerCase(),
+                name,
+                email,
                 null,
                 null
         );
