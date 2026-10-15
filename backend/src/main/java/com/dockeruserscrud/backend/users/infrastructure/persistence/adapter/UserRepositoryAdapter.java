@@ -3,15 +3,19 @@ package com.dockeruserscrud.backend.users.infrastructure.persistence.adapter;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.dockeruserscrud.backend.users.domain.model.User;
 import com.dockeruserscrud.backend.users.domain.port.UserRepository;
 import com.dockeruserscrud.backend.users.infrastructure.persistence.entity.UserJpaEntity;
 import com.dockeruserscrud.backend.users.infrastructure.persistence.mapper.UserPersistenceMapper;
 import com.dockeruserscrud.backend.users.infrastructure.persistence.repository.SpringDataUserJpaRepository;
-
-import org.springframework.transaction.annotation.Transactional;
+import com.dockeruserscrud.backend.users.domain.model.PageQuery;
+import com.dockeruserscrud.backend.users.domain.model.PageResult;
 
 @Repository
 @Transactional
@@ -51,12 +55,31 @@ public class UserRepositoryAdapter implements UserRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> findAll() {
-        return repository
-                .findAllByOrderByIdAsc()
+    public PageResult<User> findAll(PageQuery pageQuery) {
+        PageRequest springPageRequest = PageRequest.of(
+                pageQuery.page(),
+                pageQuery.size(),
+                Sort.by(Sort.Direction.ASC, "id")
+        );
+
+        Page<UserJpaEntity> entityPage =
+                repository.findAll(springPageRequest);
+
+        List<User> users = entityPage
+                .getContent()
                 .stream()
                 .map(UserPersistenceMapper::toDomain)
                 .toList();
+
+        return new PageResult<>(
+                users,
+                entityPage.getTotalElements(),
+                entityPage.getTotalPages(),
+                entityPage.getNumber(),
+                entityPage.getSize(),
+                entityPage.isFirst(),
+                entityPage.isLast()
+        );
     }
 
     @Override

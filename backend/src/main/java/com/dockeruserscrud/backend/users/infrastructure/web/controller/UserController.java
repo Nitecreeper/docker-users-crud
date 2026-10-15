@@ -1,24 +1,30 @@
 package com.dockeruserscrud.backend.users.infrastructure.web.controller;
 
-import com.dockeruserscrud.backend.users.application.usecase.CreateUserUseCase;
-import com.dockeruserscrud.backend.users.application.usecase.GetUserByIdUseCase;
-import com.dockeruserscrud.backend.users.domain.model.User;
-import com.dockeruserscrud.backend.users.infrastructure.web.dto.CreateUserRequest;
-import com.dockeruserscrud.backend.users.infrastructure.web.dto.UserResponse;
-import com.dockeruserscrud.backend.users.infrastructure.web.mapper.UserWebMapper;
-import com.dockeruserscrud.backend.users.application.usecase.ListUsersUseCase;
+import java.net.URI;
+import java.util.List;
+
 import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
-import java.util.List;
+import com.dockeruserscrud.backend.users.application.usecase.CreateUserUseCase;
+import com.dockeruserscrud.backend.users.application.usecase.GetUserByIdUseCase;
+import com.dockeruserscrud.backend.users.domain.model.PageResult;
+import com.dockeruserscrud.backend.users.domain.model.User;
+import com.dockeruserscrud.backend.users.infrastructure.web.dto.CreateUserRequest;
+import com.dockeruserscrud.backend.users.infrastructure.web.dto.PageResponse;
+import com.dockeruserscrud.backend.users.infrastructure.web.dto.UserResponse;
+import com.dockeruserscrud.backend.users.infrastructure.web.mapper.UserWebMapper;
+import com.dockeruserscrud.backend.users.application.usecase.ListUsersUseCase;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -69,11 +75,15 @@ public class UserController {
     }
 
     @GetMapping
-        public ResponseEntity<List<UserResponse>> getAllUsers() {
-        List<User> users = listUsersUseCase.execute();
+        public ResponseEntity<PageResponse<UserResponse>> getAllUsers(
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "20") int size
+        ) {
+        PageResult<User> result =
+                listUsersUseCase.execute(page, size);
 
         return ResponseEntity.ok(
-                UserWebMapper.toResponseList(users)
+                UserWebMapper.toPageResponse(result)
         );
         }
 }

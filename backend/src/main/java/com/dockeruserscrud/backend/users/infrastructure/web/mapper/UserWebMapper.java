@@ -4,6 +4,8 @@ import com.dockeruserscrud.backend.users.application.command.CreateUserCommand;
 import com.dockeruserscrud.backend.users.domain.model.User;
 import com.dockeruserscrud.backend.users.infrastructure.web.dto.CreateUserRequest;
 import com.dockeruserscrud.backend.users.infrastructure.web.dto.UserResponse;
+import com.dockeruserscrud.backend.users.domain.model.PageResult;
+import com.dockeruserscrud.backend.users.infrastructure.web.dto.PageResponse;
 
 import java.util.List;
 
@@ -35,5 +37,25 @@ public final class UserWebMapper {
             .stream()
             .map(UserWebMapper::toResponse)
             .toList();
+    }
+
+    public static PageResponse<UserResponse> toPageResponse(
+            PageResult<User> pageResult
+    ) {
+        List<UserResponse> content = pageResult
+                .content()
+                .stream()
+                .map(UserWebMapper::toResponse)
+                .toList();
+
+        return new PageResponse<>(
+                content,
+                pageResult.totalElements(),
+                pageResult.totalPages(),
+                pageResult.page(),
+                pageResult.size(),
+                pageResult.first(),
+                pageResult.last()
+        );
     }
 }

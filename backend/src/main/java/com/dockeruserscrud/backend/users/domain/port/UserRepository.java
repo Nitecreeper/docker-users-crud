@@ -1,8 +1,9 @@
 package com.dockeruserscrud.backend.users.domain.port;
 
-import java.util.List;
 import java.util.Optional;
 
+import com.dockeruserscrud.backend.users.domain.model.PageQuery;
+import com.dockeruserscrud.backend.users.domain.model.PageResult;
 import com.dockeruserscrud.backend.users.domain.model.User;
 
 public interface UserRepository {
@@ -11,7 +12,7 @@ public interface UserRepository {
     
     Optional<User> findById(Long id);
 
-    List<User> findAll();
+    PageResult<User> findAll(PageQuery pageQuery);
 
     boolean existsByEmail(String email);
 
