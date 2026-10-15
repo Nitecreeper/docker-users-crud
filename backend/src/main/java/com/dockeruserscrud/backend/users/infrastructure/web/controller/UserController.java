@@ -1,7 +1,6 @@
 package com.dockeruserscrud.backend.users.infrastructure.web.controller;
 
 import java.net.URI;
-import java.util.List;
 
 import jakarta.validation.Valid;
 
