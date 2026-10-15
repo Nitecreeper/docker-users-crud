@@ -11,12 +11,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.time.Instant;
+import java.time.OffsetDateTime;
+
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.NONE
@@ -28,6 +36,12 @@ class UserRepositoryAdapterIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+        private EntityManager entityManager;
+
+        @Autowired
+        private JdbcTemplate jdbcTemplate;
+
     @Test
     void shouldSaveAndRetrieveUser() {
         // Arrange
@@ -38,6 +52,8 @@ class UserRepositoryAdapterIntegrationTest {
 
         // Act
         User savedUser = userRepository.save(newUser);
+
+        entityManager.clear();
 
         User retrievedUser = userRepository
                 .findById(savedUser.id())
@@ -90,4 +106,105 @@ class UserRepositoryAdapterIntegrationTest {
         assertTrue(first.id() < second.id());
         assertTrue(second.id() < third.id());
     }
+
+    @Test
+        void shouldUpdateUserAndRefreshUpdatedAt() {
+        // Arrange
+        User savedUser = userRepository.save(
+                User.create("Leo", "leo@example.com")
+        );
+
+        Instant originalCreatedAt =
+                Instant.parse("2026-01-01T10:00:00Z");
+
+        Instant previousUpdatedAt =
+                Instant.parse("2026-01-02T10:00:00Z");
+
+        jdbcTemplate.update(
+                """
+                UPDATE users
+                SET created_at = ?, updated_at = ?
+                WHERE id = ?
+                """,
+                OffsetDateTime.parse("2026-01-01T10:00:00Z"),
+                OffsetDateTime.parse("2026-01-02T10:00:00Z"),
+                savedUser.id()
+        );
+
+        entityManager.clear();
+
+        User existingUser = userRepository
+                .findById(savedUser.id())
+                .orElseThrow();
+
+        User changes = new User(
+                existingUser.id(),
+                "Leonardo",
+                "leonardo@example.com",
+                existingUser.createdAt(),
+                existingUser.updatedAt()
+        );
+
+        // Act
+        User updatedUser = userRepository.save(changes);
+
+        entityManager.clear();
+
+        User retrievedUser = userRepository
+                .findById(savedUser.id())
+                .orElseThrow();
+
+        // Assert
+        assertEquals(savedUser.id(), retrievedUser.id());
+        assertEquals("Leonardo", retrievedUser.name());
+        assertEquals("leonardo@example.com", retrievedUser.email());
+
+        assertEquals(originalCreatedAt, retrievedUser.createdAt());
+
+        assertTrue(
+                updatedUser.updatedAt().isAfter(previousUpdatedAt)
+        );
+
+        assertTrue(
+                retrievedUser.updatedAt().isAfter(previousUpdatedAt)
+        );
+        }
+
+        @Test
+        void shouldDeletePersistedUser() {
+        // Arrange
+        User savedUser = userRepository.save(
+                User.create("Delete test", "delete@example.com")
+        );
+
+        // Act
+        userRepository.deleteById(savedUser.id());
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertTrue(
+                userRepository.findById(savedUser.id()).isEmpty()
+        );
+        }
+
+        @Test
+        void shouldRejectDuplicateEmailAtDatabaseLevel() {
+        // Arrange
+        userRepository.save(
+                User.create("First user", "duplicate@example.com")
+        );
+
+        User duplicateUser = User.create(
+                "Second user",
+                "duplicate@example.com"
+        );
+
+        // Act + Assert
+        assertThrows(
+                DataIntegrityViolationException.class,
+                () -> userRepository.save(duplicateUser)
+        );
+        }
 }
