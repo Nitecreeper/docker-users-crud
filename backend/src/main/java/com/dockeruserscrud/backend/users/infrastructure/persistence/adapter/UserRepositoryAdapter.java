@@ -52,7 +52,8 @@ public class UserRepositoryAdapter implements UserRepository {
     @Override
     @Transactional(readOnly = true)
     public List<User> findAll() {
-        return repository.findAll()
+        return repository
+                .findAllByOrderByIdAsc()
                 .stream()
                 .map(UserPersistenceMapper::toDomain)
                 .toList();

@@ -5,6 +5,8 @@ import com.dockeruserscrud.backend.users.domain.model.User;
 import com.dockeruserscrud.backend.users.infrastructure.web.dto.CreateUserRequest;
 import com.dockeruserscrud.backend.users.infrastructure.web.dto.UserResponse;
 
+import java.util.List;
+
 public final class UserWebMapper {
 
     private UserWebMapper() {
@@ -26,5 +28,12 @@ public final class UserWebMapper {
                 user.createdAt(),
                 user.updatedAt()
         );
+    }
+
+    public static List<UserResponse> toResponseList(List<User> users) {
+    return users
+            .stream()
+            .map(UserWebMapper::toResponse)
+            .toList();
     }
 }

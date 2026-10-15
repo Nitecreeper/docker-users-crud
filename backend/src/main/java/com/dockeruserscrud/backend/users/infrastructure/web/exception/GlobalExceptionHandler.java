@@ -1,6 +1,7 @@
 package com.dockeruserscrud.backend.users.infrastructure.web.exception;
 
 import com.dockeruserscrud.backend.users.application.exception.EmailAlreadyExistsException;
+import com.dockeruserscrud.backend.users.application.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -103,4 +104,21 @@ public class GlobalExceptionHandler {
 
         return problem;
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+        public ResponseEntity<ProblemDetail> handleUserNotFound(
+                UserNotFoundException exception,
+                HttpServletRequest request
+        ) {
+        ProblemDetail problem = createProblem(
+                HttpStatus.NOT_FOUND,
+                "User not found",
+                exception.getMessage(),
+                request
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(problem);
+        }
 }
