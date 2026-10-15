@@ -42,7 +42,7 @@ public class UserRepositoryAdapter implements UserRepository {
             UserPersistenceMapper.updateEntity(user, entity);
         }
 
-        UserJpaEntity savedEntity = repository.save(entity);
+        UserJpaEntity savedEntity = repository.saveAndFlush(entity);
         return UserPersistenceMapper.toDomain(savedEntity);
     }
 

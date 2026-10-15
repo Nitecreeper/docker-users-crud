@@ -6,6 +6,8 @@ import com.dockeruserscrud.backend.users.infrastructure.web.dto.CreateUserReques
 import com.dockeruserscrud.backend.users.infrastructure.web.dto.UserResponse;
 import com.dockeruserscrud.backend.users.domain.model.PageResult;
 import com.dockeruserscrud.backend.users.infrastructure.web.dto.PageResponse;
+import com.dockeruserscrud.backend.users.application.command.UpdateUserCommand;
+import com.dockeruserscrud.backend.users.infrastructure.web.dto.UpdateUserRequest;
 
 import java.util.List;
 
@@ -58,4 +60,15 @@ public final class UserWebMapper {
                 pageResult.last()
         );
     }
+
+    public static UpdateUserCommand toCommand(
+                Long id,
+                UpdateUserRequest request
+        ) {
+        return new UpdateUserCommand(
+                id,
+                request.name(),
+                request.email()
+        );
+        }
 }
