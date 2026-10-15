@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import com.dockeruserscrud.backend.users.application.usecase.CreateUserUseCase;
 import com.dockeruserscrud.backend.users.application.usecase.GetUserByIdUseCase;
@@ -26,6 +27,7 @@ import com.dockeruserscrud.backend.users.infrastructure.web.dto.UserResponse;
 import com.dockeruserscrud.backend.users.infrastructure.web.mapper.UserWebMapper;
 import com.dockeruserscrud.backend.users.application.usecase.ListUsersUseCase;
 import com.dockeruserscrud.backend.users.application.usecase.UpdateUserUseCase;
+import com.dockeruserscrud.backend.users.application.usecase.DeleteUserUseCase;
 
 @RestController
 @RequestMapping("/api/users")
@@ -35,17 +37,20 @@ public class UserController {
     private final GetUserByIdUseCase getUserByIdUseCase;
     private final ListUsersUseCase listUsersUseCase;
     private final UpdateUserUseCase updateUserUseCase;
+    private final DeleteUserUseCase deleteUserUseCase;
 
     public UserController(
         CreateUserUseCase createUserUseCase,
         GetUserByIdUseCase getUserByIdUseCase,
         ListUsersUseCase listUsersUseCase,
-        UpdateUserUseCase updateUserUseCase
+        UpdateUserUseCase updateUserUseCase,
+        DeleteUserUseCase deleteUserUseCase
         ) {
         this.createUserUseCase = createUserUseCase;
         this.getUserByIdUseCase = getUserByIdUseCase;
         this.listUsersUseCase = listUsersUseCase;
         this.updateUserUseCase = updateUserUseCase;
+        this.deleteUserUseCase = deleteUserUseCase;
         }
 
     @PostMapping
@@ -104,4 +109,15 @@ public class UserController {
                 UserWebMapper.toResponse(updatedUser)
         );
         }
+
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> deleteUser(
+                @PathVariable Long id
+        ) {
+        deleteUserUseCase.execute(id);
+
+        return ResponseEntity.noContent().build();
+        }
+
+
 }
